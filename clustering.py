@@ -46,7 +46,7 @@ for i in catalogue:
     
 names_list = pd.DataFrame(names_list)
 
-all_SB_data = pd.read_pickle(path +"/all_SB_data.pkl").T.reset_index(drop=True).astype(float) #pkl of surface brightness profiles, for each source to be clustered.
+all_SB_data = pd.read_pickle(path +"/all_SB_data.pkl").T.reset_index(drop=True).astype(float) #pkl of surface brightness spline profiles, for each source to be clustered.
 
 all_SB_data_scaled = ((all_SB_data.T- np.mean(all_SB_data.to_numpy(),axis=1))/np.std(all_SB_data.to_numpy(),axis=1)).T  #scale the SB profiles 
 all_SB_data_scaled = all_SB_data_scaled.astype(np.float32).replace([np.inf, -np.inf], np.nan, inplace=False)
