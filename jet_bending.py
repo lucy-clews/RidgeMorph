@@ -41,14 +41,14 @@ files=[]
 source_in_hp = []
 
 work_dir='' #set working directory
-source_dirs ='' #path  to parent dir where source info is stored
+source_dir='' #path  to parent dir where source info is stored
 #read data
 with fits.open(work_dir+'/AGNs_with_ridge.fits') as data:
     catalogue = table.Table(data[1].data)
 
 #make list of all hp directories where LoTSS Dr2 sources are stored
 
-for directory in glob.glob(source_dirs+'/*/ridgeline/hp_*'):
+for directory in glob.glob(source_dir+'/*/ridgeline/hp_*'):
     hp.append(directory)
 
 number_of_hp = len(hp)
