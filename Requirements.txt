@@ -1,0 +1,4 @@
+CLUSTERING REQUIREMENTS
+1. all_SB_data.pkl - pkl file containing ridgeline surface brightness spline profiles dervied using RL-Xid, for each source to be clustered.
+2. all_host_data.pkl - pkl file containing closest surface brightness spline point to host galaxy, for each source to be clustered.
+3. 
