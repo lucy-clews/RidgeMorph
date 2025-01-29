@@ -37,7 +37,7 @@ from warnings import warn
 
 from umap.plot import _themes, _get_embedding, _to_hex
 
-with fits.open(path+'/Data/catalogue_before_clustering_and_classification.fits') as data: #catalogue of sources to cluster 
+with fits.open(path+'/Data/catalogue.fits') as data: #catalogue of sources to cluster 
     catalogue = table.Table(data[1].data)
     
 for i in catalogue:
