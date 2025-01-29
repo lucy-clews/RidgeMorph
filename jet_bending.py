@@ -40,22 +40,20 @@ names=[]
 files=[]
 source_in_hp = []
 
-
-
-#get data
-with fits.open('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/Data/AGNs_with_ridge.fits') as data:
+work_dir='' #set working directory
+source_dirs ='' #path  to parent dir where source info is stored
+#read data
+with fits.open(work_dir+'/AGNs_with_ridge.fits') as data:
     catalogue = table.Table(data[1].data)
 
+#make list of all hp directories where LoTSS Dr2 sources are stored
 
-
-#make list of all hp directories
-
-for directory in glob.glob('/beegfs/lofar/mjh/rgz/*/ridgeline/hp_*'):
+for directory in glob.glob(source_dirs+'/*/ridgeline/hp_*'):
     hp.append(directory)
 
 number_of_hp = len(hp)
 print('There are', number_of_hp, 'healpix directories')
-np.savetxt('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/hp_directories.txt', hp, fmt='%s',delimiter=' ')
+np.savetxt(path+'hp_directories.txt', hp, fmt='%s',delimiter=' ')
 
 
 batch_number = int(sys.argv[1])
@@ -65,8 +63,8 @@ print(path)
 
 #import sources in this hp dir
 
-all_names =  open('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/Data/all_names.txt').read().splitlines()
-dirs_for_names =  open('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/hp_directories_all_sources.txt').read().splitlines()
+all_names =  catalogeue['Source_Name']
+dirs_for_names =  open(work_dir+'/hp_directories_all_sources.txt').read().splitlines()
 
 for index,item in enumerate(dirs_for_names):
     if item==path:
@@ -129,7 +127,7 @@ for i in catalogue:
         column_values=['ra (pix)', 'dec (pix)','length_on_ridge (pix)']
         index_values = np.linspace(0, len(ra)-1,len(ra))
         df = pd.DataFrame(data=data, columns=column_values,index=index_values)
-        df.to_csv('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/ridge_csv/%s-ridge.csv' %source_name)
+        df.to_csv(work_dir+'/ridge_csv/%s-ridge.csv' %source_name)
 
         #ridgeline spline
 
@@ -153,27 +151,27 @@ for i in catalogue:
         column_values=['Spline_x (pix)', 'Spline_y (pix)','length_on_spline (pix)']
         index_values = np.linspace(0, 199,200)
         df =pd.DataFrame(data=data,columns=column_values,index=index_values)
-        df.to_csv('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/ridge_spline_csv/%s-ridge_spline.csv' %source_name)
+        df.to_csv(work_dir+'/ridge_spline_csv/%s-ridge_spline.csv' %source_name)
 
         #save host information
 
         d={'Host_x (pix)':[Ix], 'Host_y (pix)':[Iy], 'Hostspline_x (pix)':hostspline_x,'Hostspline_y (pix)':hostspline_y,'Fraction of ridge length to host':hostlength_fraction}
         column_values=['Host_x (pix)','Host_y (pix)','Hostspline_x (pix)','Hostspline_y (pix)','Hostlength (pix)','Fraction of ridge length to host']
         df =pd.DataFrame(data=d, columns=column_values)
-        df.to_csv('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/host_positions/%s-host_info.csv' %source_name)
+        df.to_csv(work_dir+'/host_positions/%s-host_info.csv' %source_name)
 
 
         #Calculate curvature 
         kappa = curvature(dx_du, dy_du, d2x_du2, d2y_du2)
 
-        np.savetxt('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/curvature_txt/%s-curvature.txt' %source_name, kappa, delimiter=' ')
+        np.savetxt(work_dir+'/curvature_txt/%s-curvature.txt' %source_name, kappa, delimiter=' ')
         plt.figure(figsize=(10,8))
         plt.plot(length_on_spline,kappa,'-', color='k', label='Curvature')
         plt.axvline(hostlength_spline, ls='--', color='b', label='Host Position')
         plt.title(source_name)
         plt.xlabel('length_along_spline (pix)')
         plt.ylabel('$\kappa$')
-        plt.savefig('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/curvature_plots/%s-curavture.png' %(source_name))
+        plt.savefig(work_dir+'/curvature_plots/%s-curavture.png' %(source_name))
 
 
         #curvature/spline plot
@@ -191,7 +189,7 @@ for i in catalogue:
         ax1.plot(xnew_u,ynew_u,'--',label='Spline', color='k') #plot spline
         ax1.legend()
         plt.show()
-        plt.savefig('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/ridge_curvature_plots/%s-curvature_and_ridge.png' %(source_name))
+        plt.savefig(work_dir+'/ridge_curvature_plots/%s-curvature_and_ridge.png' %(source_name))
 
 
         #Calculate surface brightness
@@ -204,7 +202,7 @@ for i in catalogue:
         column_values=['Distance along ridge (pix)','Average SB (mJy/beam)']
         index_values = np.linspace(0, len(distance)-1, len(distance))
         df =pd.DataFrame(data=d, columns=column_values,index=index_values)
-        df.to_csv('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/SB_csv/%s-SB.csv' %source_name)
+        df.to_csv(work_dir+'/SB_csv/%s-SB.csv' %source_name)
             
         #surface brightness spline
         SB_splinex, SB_spliney = spline(distance,average) #SB spline
@@ -214,7 +212,7 @@ for i in catalogue:
         column_values=['Spline_x','Spline_y']
         index_values = np.linspace(0, len(SB_splinex)-1, len(SB_splinex))
         df =pd.DataFrame(data=d, columns=column_values,index=index_values)
-        df.to_csv('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/SB_spline_csv/%s-SB_spline.csv' %source_name)
+        df.to_csv(work_dir+'/SB_spline_csv/%s-SB_spline.csv' %source_name)
 
         plt.figure(figsize = (10,8))
         plt.plot(distance, average, ls = '-',color='b', label = 'Surface Brightness - Average Pixels')
@@ -226,9 +224,9 @@ for i in catalogue:
         plt.xlabel('Distance Along Ridgeline (pix)')
         plt.ylabel('Average Surface Brightness (mJy/beam)')
         plt.legend() 
-        plt.savefig('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/SB_profiles/Profile-%s.png' %source_name)
+        plt.savefig(work_dir+'/SB_profiles/Profile-%s.png' %source_name)
 
         plt.close('all')
 
-np.savetxt('/beegfs/lofar/lclews/DR2_ridgelines/full_sample_run_3/source_in_hp/batch_%s-sources_with_ridge.txt' %batch_number, source_in_hp, fmt='%s',delimiter=' ')
+np.savetxt(work_dir+'/source_in_hp/batch_%s-sources_with_ridge.txt' %batch_number, source_in_hp, fmt='%s',delimiter=' ')
 
